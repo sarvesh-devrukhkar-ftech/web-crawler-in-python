@@ -1,72 +1,45 @@
-- fetchData.py
+# 🕷️ BBC Web Crawler (Python)
 
-```fetchData.py
-import requests
-from bs4 import BeautifulSoup
+A simple Python-based web crawler that fetches the BBC homepage, parses the HTML, extracts all valid links, and continues crawling discovered pages.  
+This project was built using **requests** and **BeautifulSoup4** as part of internship learning tasks.
 
-url = "https://www.bbc.com"
-path = "scraped-data/bbc_news.html"  # Path of the file to save Scraped Data.
+---
 
+## 🚀 Features
 
-def fetch_and_save_data(url, path):
-    try:
-        response = requests.get(url, timeout=5)  # Making API Call.
-        response.raise_for_status()  # raises an error for 4xx/5xx if occurred.
-        print("Data Fetched Successfully!")
-    except requests.exceptions.Timeout:
-        print("Request timed out")
-    except requests.exceptions.HTTPError as error:
-        print(f"HTTP error: {error}")
-    except requests.exceptions.RequestException as error:
-        print(f"Error during request: {error}")
+- Fetches HTML pages using `requests`
+- Parses page content using `BeautifulSoup`
+- Extracts and normalizes all valid `<a>` links
+- Maintains a **frontier** list for crawling
+- Uses a **visited** dictionary to prevent repeated crawling
+- Basic error handling for network issues
+- URL filtering (skips # links, help links, invalid URLs)
 
-    # Creating new file with fetched response.
-    with open(path, "w") as file:
-        file.write(response.text)
-        print("Data successfully saved in file!")
+---
 
+## 🛠️ Technologies Used
 
-# Function Calling: Main Execution
-fetch_and_save_data(url, path)
+- **Python 3.x**
+- **requests**
+- **beautifulsoup4**
 
-"""Code """
+## 📦 Installation
 
-readFilePath = "scraped-data/bbc_news.html"  # Path of the file to Scrap Data.
+```bash
+# Clone the repository
+git clone https://github.com/sarvesh-devrukhkar-ftech/web-crawler-in-python.git
+cd web-crawler-in-python
 
+# Create a virtual environment
+python3 -m venv venv
 
-def scrap_and_save_data(readFilePath):
-    with open(readFilePath, "r") as file:
-        html_doc = file.read()
+# Activate the virtual environment
+source venv/bin/activate      # macOS / Linux
+venv\Scripts\activate         # Windows
 
-    soup = BeautifulSoup(html_doc, "html.parser")
+# Install dependencies
+pip install -r requirements.txt
 
-    script_tag = soup.find(id="__NEXT_DATA__").get_text(strip=True)
-    print(type(script_tag))
-
-
-# Function Calling: Main Execution
-scrap_and_save_data(readFilePath)
-
-```
-
-- scrapeData.py
-
-```scrapeData.py
-from bs4 import BeautifulSoup
-
-readFilePath = "scraped-data/bbc_news.html"  # Path of the file to Scrap Data.
-
-
-def scrap_and_save_data(readFilePath):
-    with open(readFilePath, "r") as file:
-        html_doc = file.read()
-
-    soup = BeautifulSoup(html_doc, "html.parser")
-
-    script_tag = soup.find(id="__NEXT_DATA__").get_text(strip=True)
-    print(type(script_tag))
-
-
-# Function Calling: Main Execution
-scrap_and_save_data(readFilePath)
+# Run the Crawler
+python crawler.py
 ```

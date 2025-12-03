@@ -8,16 +8,11 @@ URL = "https://www.bbc.com"
 def fetch_page(url):
     try:
         response = requests.get(url, timeout=5)
-        # response.raise_for_status()
         print("===== Start =====")
         print("Step 1 - Fetching Data Successful!")
         return response
-    # except requests.exceptions.Timeout:
-    #     print("Request timed out")
-    # except requests.exceptions.HTTPError as error:
-    #     print(f"HTTP error: {error}")
-    except requests.exceptions.RequestException as error:
-        print(f"Error during request: {error}")
+    except Exception as error:
+        print(f"An Error Occurred: {error}")
 
 
 def parse_page(res):
@@ -27,44 +22,29 @@ def parse_page(res):
     return parsed_data
 
 
-"""
 def parse_next_urls(parsed_data):
     next_urls = []
-    all_link_tags = parsed_data.find_all("a")
+    all_link_tags = parsed_data.find_all("a")  # Getting all <a> tags.
+
+    # Looping over tags to get 'href'
     for tag in all_link_tags:
         link = tag.get("href")
-        if link is None:
-            continue
-        print(link)
 
-        # Checking URL is valid or not.
-        avoid_list = ["#", "mailto:"]
-        for item in avoid_list:
-            if link and link.find(item) != -1:
-                print("Avoided URL: ", link)
-                continue
-            elif link.startswith("https"):
-                next_urls.append(link)
-            elif link.startswith("/"):
-                next_urls.append(URL + link)
-
-    # print("Step 3 - Parsing Next URLs Data Successful!")
-    print("3--------------------")
-    return next_urls
-"""
-
-
-def parse_next_urls(parsed_data):
-    next_urls = []
-    all_link_tags = parsed_data.find_all("a")
-
-    for tag in all_link_tags:
-        link = tag.get("href")
+        # Checking 'link' has False value or not.
         if not link:
             continue
 
-        # Avoid invalid links
-        avoid_list = ["#", "mailto:", "javascript:"]
+        # Avoid invalid links.
+        avoid_list = [
+            "#",
+            "mailto:",
+            "javascript:",
+            "?page=",
+            "?search=",
+            "&sort=",
+            "&filter=",
+            "/av/",
+        ]
         if any(bad in link for bad in avoid_list):
             continue
 
@@ -81,34 +61,27 @@ def parse_next_urls(parsed_data):
     return next_urls
 
 
+# Function to save visited links into the JSON file.
 def save_visited(visited):
     with open("visited.json", "w") as file:
         json.dump(list(visited), file, indent=4)
 
 
-def save_frontier(frontier):
-    with open("frontier.json", "w") as file:
-        json.dump(frontier, file, indent=4)
-
-
-frontier = ["https://www.bbc.com"]
+frontier = ["https://www.bbc.com/news"]
 visited = set()
-
-"""
-while len(frontier) > 0:
-    current_url = frontier.pop(0)  # Removing URL from the Frontier List (DFS)
-    if current_url in visited:
-        continue
-    res = fetch_page(current_url)
-    parsed_data = parse_page(res)
-    next_urls = parse_next_urls(parsed_data)
-    frontier.extend(next_urls)
-    visited[current_url] = ""  # REMOVE this line.
-"""
+MAX_PAGES = 500  # Setting limits to visit pages.
 
 while len(frontier) > 0:
-    save_frontier(frontier)
+    # Max Page Limit
+    if len(visited) >= MAX_PAGES:
+        print("Reached max page limit. Stopping crawler.")
+        break
+
     current_url = frontier.pop(0)
+
+    # Crawl only particular pages.
+    if not current_url.startswith("https://www.bbc.com/news"):
+        continue
 
     if current_url in visited:
         continue

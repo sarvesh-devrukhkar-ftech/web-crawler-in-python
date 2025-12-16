@@ -17,7 +17,7 @@ def save_og_data(og_data):
 
 # Function to save visited links into the JSON file.
 def save_visited(visited):
-    with open("visited.json", "w") as file:
+    with open("visited_urls.json", "w") as file:
         json.dump(list(visited), file, indent=4)
 
 
@@ -34,6 +34,7 @@ def fetch_page(url):
 
 def parse_page(res):
     """Creating soup to extract data."""
+
     parsed_data = BeautifulSoup(res.text, "html.parser")  # Parsing Soup Data
     all_link_tags = parsed_data.find_all("a")  # Getting all <a> tags.
 
@@ -45,6 +46,7 @@ def parse_page(res):
 
     """ Storing OG data in dictionary. """
     og_data = {
+        "page_url": "",
         "title": get_og("og:title"),
         "description": get_og("og:description"),
         "image_url": get_og("og:image"),
@@ -92,25 +94,23 @@ def parse_next_urls(all_link_tags):
 
 """ Main Code Execution """
 frontier = [URL]
-visited = set()
+visited_urls = set()
 results = list()
 
 MAX_PAGES = 500  # Setting limits to visit pages.
 
 while len(frontier) > 0:
     # Max Page Limit
-    if len(visited) >= MAX_PAGES:
+    if len(visited_urls) >= MAX_PAGES:
         print("Reached max page limit. Stopping crawler.")
         break
     current_url = frontier.pop(0)
 
-    if current_url in visited:
+    if current_url in visited_urls:
         continue
-    visited.add(current_url)
+    visited_urls.add(current_url)
 
-    if URL in visited:
-        visited.remove(URL)
-    save_visited(visited)
+    save_visited(visited_urls)
     res = fetch_page(current_url)  # Step-1
 
     # If result not found, stop the crawler.
@@ -118,11 +118,13 @@ while len(frontier) > 0:
         sys.exit()
 
     parsed_data, og_data = parse_page(res)  # Step-2
+    print(og_data)
+    
     results.append(og_data)  # Appending Data into List.
     save_og_data(results)  # Saving List of Data into JSON.
     next_urls = parse_next_urls(parsed_data)  # Step-3
 
-    # Add only URLs that are not visited.
+    # Add only URLs that are not visited_urls.
     for url in next_urls:
-        if url not in visited:
+        if url not in visited_urls:
             frontier.append(url)
